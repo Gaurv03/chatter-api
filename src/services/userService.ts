@@ -1,8 +1,9 @@
-// const bcrypt = require('bcrypt-ts');
-// const bcrypt = require('bcrypt');
 import bcrypt from 'bcrypt';
 import { User } from "../models/userModel";
+import { statusCodes } from '../helpers';
+var jwt = require('jsonwebtoken');
 
+const statusCode = new statusCodes();
 class UserService {
 
     public async register(req: any, res: any): Promise<Object> {
@@ -11,11 +12,11 @@ class UserService {
             const { fullName, userName, password, confirmPassword, gender } = req.body;
 
             if (password !== confirmPassword) {
-                return res.status(400).json({ message: "Password donot match" })
+                return statusCode.badRequest(res, "Password does not match")
             }
             let userCheck = await User.findOne({ userName });
             if (userCheck) {
-                return res.status(400).json({ message: "User already exist" })
+                return statusCode.badRequest(res, "User already exist")
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,7 +37,38 @@ class UserService {
             console.log(error)
             throw new Error('Error creating item: ' + error);
         }
-        return { data: userData }
+        return { userData }
+    }
+
+    public async login(req: any, res: any): Promise<any> {
+        let userCheck, token
+        try {
+            const { userName, password } = req.body;
+
+            userCheck = await User.findOne({ userName });
+            if (!userCheck) {
+                return statusCode.badRequest(res, "User not found")
+            } else {
+                const userPassword = userCheck.password as string;
+                const passwordCheck = await bcrypt.compare(password, userPassword)
+                if (!passwordCheck) {
+                    return statusCode.badRequest(res, "Incorrect password")
+                }
+            }
+
+            userCheck.password = undefined;
+            const tokenData = {
+                userId: userCheck._id,
+                userName: userCheck.userName,
+                fullName: userCheck.fullName
+            }
+            token = await jwt.sign(tokenData, process.env.JWT_SECRET, { expiresIn: '1d' })
+            res.cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "strict" })
+        } catch (error) {
+            console.log(error)
+            throw new Error('Error creating item: ' + error);
+        }
+        return { userCheck }
     }
 
 }
