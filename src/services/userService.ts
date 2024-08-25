@@ -71,6 +71,17 @@ class UserService {
         return { userCheck }
     }
 
+    public async logout(req: any, res: any): Promise<any> {
+        let userCheck, token
+        try {
+            res.cookie("token", "", { maxAge: 0, httpOnly: true, sameSite: "strict" })
+        } catch (error) {
+            console.log(error)
+            throw new Error('Error creating item: ' + error);
+        }
+        return "Logged Out"
+    }
+
 }
 
 export default new UserService();
