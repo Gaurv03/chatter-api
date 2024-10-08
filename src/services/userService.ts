@@ -82,6 +82,19 @@ class UserService {
         return "Logged Out"
     }
 
+    public async getOtherUsers(req: any, res: any): Promise<any> {
+        let userList
+        try {
+            const loggedInUser = req.userId
+            userList = await User.find({ _id: { $ne: loggedInUser } }).select("-password");
+
+        } catch (error) {
+            console.log(error)
+            throw new Error('Error creating item: ' + error);
+        }
+        return { userList }
+    }
+
 }
 
 export default new UserService();

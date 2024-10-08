@@ -31,6 +31,15 @@ class UserController {
             // return statusCode.internalServerError(res, error)
         }
     }
+    public async getOtherUsers(req: Request, res: Response) {
+        try {
+            const data = await userService.getOtherUsers(req, res);
+            return statusCode.success(res, "Request Acknowledged", data)
+        } catch (error: any) {
+            console.log(error)
+            // return statusCode.internalServerError(res, error)
+        }
+    }
 
 }
 
