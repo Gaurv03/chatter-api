@@ -12,9 +12,6 @@ class MessageService {
         let userData
         try {
             let senderId = req.userId, receiverId = req.params.id, message = req.body.message;
-            console.log(senderId)
-            console.log(receiverId)
-            console.log(message)
             let gotConversation = await Conversation.findOne({
                 participants: { $all: [senderId, receiverId] }
             })
@@ -39,6 +36,22 @@ class MessageService {
             throw new Error('Error creating item: ' + error);
         }
         return { userData }
+    }
+
+    public async getMessage(req: any, res: any): Promise<Object> {
+        let msgData
+        try {
+            let senderId = req.userId, receiverId = req.params.id;
+            let gotConversation = await Conversation.findOne({
+                participants: { $all: [senderId, receiverId] }
+            }).populate("messages")
+            msgData = (gotConversation?.messages)
+
+        } catch (error) {
+            console.log(error)
+            throw new Error('Error creating item: ' + error);
+        }
+        return { msgData }
     }
 }
 
