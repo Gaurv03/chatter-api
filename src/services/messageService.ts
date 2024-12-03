@@ -9,7 +9,7 @@ const statusCode = new statusCodes();
 class MessageService {
 
     public async sendMessage(req: any, res: any): Promise<Object> {
-        let userData
+        let msg
         try {
             let senderId = req.userId, receiverId = req.params.id, message = req.body.message;
             let gotConversation = await Conversation.findOne({
@@ -30,12 +30,12 @@ class MessageService {
                 gotConversation.messages.push(newMsg._id)
             }
             await gotConversation.save()
-
+            msg = newMsg;
         } catch (error) {
             console.log(error)
             throw new Error('Error creating item: ' + error);
         }
-        return { userData }
+        return { msg }
     }
 
     public async getMessage(req: any, res: any): Promise<Object> {
