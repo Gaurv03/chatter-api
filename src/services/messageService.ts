@@ -3,6 +3,7 @@ import { User } from "../models/userModel";
 import { statusCodes } from '../helpers';
 import { Conversation } from '../models/conversationModel';
 import { Message } from '../models/messageModel';
+import { getReceiverSocketId, io } from '..';
 var jwt = require('jsonwebtoken');
 
 const statusCode = new statusCodes();
@@ -29,7 +30,15 @@ class MessageService {
             if (newMsg) {
                 gotConversation.messages.push(newMsg._id)
             }
-            await gotConversation.save()
+            // await gotConversation.save()
+            await Promise.all([gotConversation.save(), newMsg.save()])
+
+            // Socket IO
+            const receiverSocketId = getReceiverSocketId(receiverId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("newMessage", newMsg)
+            }
+
             msg = newMsg;
         } catch (error) {
             console.log(error)
