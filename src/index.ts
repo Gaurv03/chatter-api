@@ -54,6 +54,14 @@ io.on('connection', (socket) => {
     }
     io.emit('getOnlineUsers', Object.keys(userSocketMap))
 
+    socket.on('typing', (data) => {
+        // console.log(data)
+        if (data.typing == true)
+            io.emit('display', data)
+        else
+            io.emit('display', data)
+    })
+
     socket.on('disconnect', () => {
         // console.log("User Disconnected", socket.id)
         delete userSocketMap[userId as string];
